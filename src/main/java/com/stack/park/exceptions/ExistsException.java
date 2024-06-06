@@ -1,9 +1,9 @@
 package com.stack.park.exceptions;
 
-public class UserExistsException extends Exception {
+public class ExistsException extends RuntimeException {
     private static final long serialVersionUID = 2L;
 
-    public UserExistsException(String message) {
+    public ExistsException(String message) {
         super(message);
     }
 }
