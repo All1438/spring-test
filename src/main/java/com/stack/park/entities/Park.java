@@ -34,6 +34,7 @@ public class Park {
     private Integer capacity;
 
     @Column(name= "occupiedSpace", nullable=false)
+    @Min(0)
     private Integer occupiedSpace;
 
     @CreatedDate

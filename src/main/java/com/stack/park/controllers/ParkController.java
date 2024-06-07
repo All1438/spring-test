@@ -53,7 +53,7 @@ public class ParkController {
             errorResponse.put("message", ex.getMessage());
 
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        } catch (Exception ex) {
+         } catch (Exception ex) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("message", "Failed to create park");
             

@@ -21,13 +21,20 @@ public class ParkService {
         if (park.getOccupiedSpace() > park.getCapacity()) {
             throw new IllegalArgumentException("Occupied space cannot exceed capacity");
         }
-
-        Optional<Park>existingPark = parkRepository.findByParkName(park.getParkName());
-        if(existingPark.isPresent()) {
-            throw new IllegalArgumentException("Park with the same name already exists");
+        try {
+            
+            parkRepository.save(park);
+        } catch (Exception ex){
+            System.out.println(ex.getMessage());
+            throw new IllegalArgumentException(ex.getMessage());
         }
+        // Optional<Park>existingPark = parkRepository.findByParkName(park.getParkName());
+        // if(existingPark.isPresent()) {
+        //     throw new IllegalArgumentException("Park with the same name already exists");
+        // }
+        
+        return null;
 
-        return parkRepository.save(park);
     }
 
     // get all
