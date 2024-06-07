@@ -21,6 +21,12 @@ public class ParkService {
         if (park.getOccupiedSpace() > park.getCapacity()) {
             throw new IllegalArgumentException("Occupied space cannot exceed capacity");
         }
+
+        Optional<Park>existingPark = parkRepository.findByParkName(park.getParkName());
+        if(existingPark.isPresent()) {
+            throw new IllegalArgumentException("Park with the same name already exists");
+        }
+
         return parkRepository.save(park);
     }
 

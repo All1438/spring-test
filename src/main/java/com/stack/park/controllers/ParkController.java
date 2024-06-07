@@ -1,6 +1,8 @@
 package com.stack.park.controllers;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,20 +40,27 @@ public class ParkController {
      * @throws ResponseStatusException Si la création du park échoue
      */
     @PostMapping
-    public ResponseEntity<Park> createUser(@Valid @RequestBody Park park) {
+    public ResponseEntity<?> createPark(@Valid @RequestBody Park park) {
         try {
-            if(park.getOccupiedSpace() == null) {
+            if (park.getOccupiedSpace() == null) {
                 park.setOccupiedSpace(0);
             }
 
             Park createdPark = parkService.create(park);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdPark);
         } catch (IllegalArgumentException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", ex.getMessage());
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to create park", ex);
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Failed to create park");
+            
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
+    
 
     /**
      * Récupère tous les parks

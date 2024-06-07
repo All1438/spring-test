@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
+
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(ParkController.class) // configure pour tester uniquement le contrôleur spécifié qui est dans main
@@ -44,7 +44,7 @@ public class ParkControllerTest {
     }
 
     @Test
-    void createUser() throws Exception {
+    void createPark() throws Exception {
         when(parkService.create(any(Park.class))).thenReturn(park); // indique que lorsqu'une méthode create est appelé sur l'objet 'parkService'
         // create(any(Park.class)) = permet de dire que peu importe quel objet 'Park' est passé à la méthode, retournez simplement 'park'
 
@@ -52,7 +52,20 @@ public class ParkControllerTest {
                 .contentType(MediaType.APPLICATION_JSON) // spécifie le type de contenu de la requête HTTP (ici c'est sous forme JSON)
                 .content(objectMapper.writeValueAsString(park))) // ajoute le contenu de la requête HTTP. nous utilisons 'objectMapper', un utilitaire Jackson pour convertir un objet Java en une chaine JSON
                 .andExpect(status().isCreated()) // andExpect() = vérifie que le status de la réponse est 201 Created
-                .andExpect(jsonPath("$.name").value(park.getParkName())); // vérifie que la valeur de cette clé correnspond à park.getName()
+                .andExpect(jsonPath("$.parkName").value(park.getParkName())); // vérifie que la valeur de cette clé correnspond à park.getName()
                 // jsonPath("$.name") = la valeur attendu
+    }
+
+    @Test
+    void createPark_OccupiedSpaceExceedsCapacity() throws Exception {
+        park.setOccupiedSpace(50000);
+
+        when(parkService.create(any(Park.class))).thenThrow(new IllegalArgumentException("Occupied space cannot exceed capacity"));
+
+        mockMvc.perform(post("/api/parks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(park)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Occupied space cannot exceed capacity"));
     }
 }

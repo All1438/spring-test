@@ -3,6 +3,8 @@ package com.stack.park.services;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,7 +41,7 @@ public class ParkServiceTest {
         MockitoAnnotations.openMocks(this);
         
         park = new Park();
-        park.setParkId(2000);
+        park.setParkId(1);
         park.setParkName("Dallas Fort Worth International Airport");
         park.setCapacity(40000);
         park.setOccupiedSpace(1000);
@@ -56,7 +58,7 @@ public class ParkServiceTest {
 
     @Test
     void testCreateParkOccupiedSpaceExceedsCapacity() {
-        park.setOccupiedSpace(50000);
+        park.setOccupiedSpace(50000); // Exceeds capacity
 
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> { // assertThrows() = vérifie si une exception de type 'IllegalArgumentException' est levée lors de l'execution de la méthode create de ParkService
             parkService.create(park);
@@ -66,8 +68,14 @@ public class ParkServiceTest {
     }
 
     @Test
-    void testCreateParkDuplicateName() {
-        
+    void testCreateParkWithDuplicateName() {
+        when(parkRepository.findByParkName(any(String.class))).thenReturn(Optional.of(park)); // .findByParkName() = cela simule la situation ou un park avec le même nom existe déjà dans la base de données
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            parkService.create(park);
+        });
+
+        assertEquals("Park with the same name already exists", exception.getMessage());
     }
 
 
