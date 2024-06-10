@@ -16,25 +16,29 @@ public class ParkService {
     @Autowired
     private ParkRepository parkRepository;
 
-    // create User Method
-    public Park create(Park park) {
+    private void validatePark(Park park) { // validation centralisé
         if (park.getOccupiedSpace() > park.getCapacity()) {
             throw new IllegalArgumentException("Occupied space cannot exceed capacity");
         }
-        try {
-            
-            parkRepository.save(park);
-        } catch (Exception ex){
-            System.out.println(ex.getMessage());
-            throw new IllegalArgumentException(ex.getMessage());
-        }
-        // Optional<Park>existingPark = parkRepository.findByParkName(park.getParkName());
-        // if(existingPark.isPresent()) {
-        //     throw new IllegalArgumentException("Park with the same name already exists");
-        // }
-        
-        return null;
 
+        if (park.getOccupiedSpace() < 0) {
+            throw new IllegalArgumentException("Occupied space cannot be negative");
+        }
+
+        if (park.getCapacity() <= 0) {
+            throw new IllegalArgumentException("Capacity must be greater than zero");
+        }
+
+        Optional<Park> existingPark = parkRepository.findByParkName(park.getParkName());
+        if (existingPark.isPresent()) {
+            throw new IllegalArgumentException("Park with the same name already exists");
+        }
+    }
+
+    // create User Method
+    public Park create(Park park) {
+        validatePark(park);
+        return parkRepository.save(park);
     }
 
     // get all
@@ -42,25 +46,26 @@ public class ParkService {
         return parkRepository.findAll();
     }
 
-    // get by id
-    public Optional<Park> findById(Integer id) {
-       return parkRepository.findById(id);
+    // get by parkId
+    public Optional<Park> findById(Integer parkId) {
+       return parkRepository.findById(parkId);
     }
 
-    // update user by id
-    public Park updateById(Park user, Integer id) {
-        if (!parkRepository.existsById(id)) {
-            throw new NotFoundException("Park not found with id: " +id);
+    // update park by parkId
+    public Park updateById(Park park, Integer parkId) {
+        if (!parkRepository.existsById(parkId)) {
+            throw new NotFoundException("Park not found with parkId: " +parkId);
         }
-        user.setParkId(id);
-        return parkRepository.save(user);
+        validatePark(park);
+        park.setParkId(parkId);
+        return parkRepository.save(park);
     }
 
-    // delete by id
-    public void deleteById(Integer id) {
-        if (!parkRepository.existsById(id)) {
-            throw new NotFoundException("Park not found with id: " + id);
+    // delete by parkId
+    public void deleteById(Integer parkId) {
+        if (!parkRepository.existsById(parkId)) {
+            throw new NotFoundException("Park not found with parkId: " + parkId);
         }
-        parkRepository.deleteById(id);
+        parkRepository.deleteById(parkId);
     }
 }
