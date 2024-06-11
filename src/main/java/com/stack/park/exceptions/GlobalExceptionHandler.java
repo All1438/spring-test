@@ -31,6 +31,10 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);    
         });
 
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("message", "Failed to create PARK");
+        errorResponse.put("details", errors.toString());
+
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 

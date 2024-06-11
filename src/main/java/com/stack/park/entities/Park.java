@@ -1,7 +1,6 @@
 package com.stack.park.entities;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -13,9 +12,10 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "park")
@@ -28,15 +28,18 @@ public class Park {
     private Integer parkId;
 
     @Column(name= "parkName", nullable=false)
+    @NotBlank(message = "Park name is mandatory") // @NotBlank() = pour les types String
     private String parkName;
 
     
     @Column(name= "capacity", nullable=false)
-    @Min(1)
+    @Min(value=1, message = "Capacity must be at least 1")
+    @NotNull(message = "Capacity is mandatory") // @NotNull() = pour les types Integer
     private Integer capacity;
 
     @Column(name= "occupiedSpace", nullable=false)
-    @Min(0)
+    @Min(value=0, message = "Occupied space cannot be negative")
+    @NotNull(message = "occupid space is Mandatory")
     private Integer occupiedSpace;
 
     @CreatedDate
@@ -47,8 +50,6 @@ public class Park {
     @Column(name = "lastModifiedDate", nullable = false)
     private LocalDateTime lastModifiedDate;
 
-    @OneToMany(mappedBy="park")
-    private List<Reservation> reservations;
 
     
     
@@ -98,12 +99,6 @@ public class Park {
     public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
         this.lastModifiedDate = lastModifiedDate;
     }
+
     
-    public List<Reservation> getReservations() {
-        return reservations;
-    }
-    
-    public void setReservations(List<Reservation> reservations) {
-        this.reservations = reservations;
-    }
 }

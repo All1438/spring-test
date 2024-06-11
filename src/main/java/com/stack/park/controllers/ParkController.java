@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.stack.park.dto.ParkProjection;
 import com.stack.park.entities.Park;
 import com.stack.park.exceptions.NotFoundException;
 import com.stack.park.services.ParkService;
@@ -81,17 +82,13 @@ public class ParkController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Optional<Park>> getUserById(@PathVariable("id") Integer id) {
-        try {
             Optional<Park> userOptional = parkService.findById(id);
     
             if (userOptional.isPresent()) {
                 return ResponseEntity.ok(userOptional);
             } else {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.notFound().build(); // si on ne spécifie pas le NotFoundException dans ExceptionHandler alors ici il peut retourner une erreur 500
             }
-        } catch (NotFoundException ex) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ex.getMessage());
-        }
     }
 
     /**
@@ -124,5 +121,25 @@ public class ParkController {
         return ResponseEntity.noContent().build();
     }
 
-    
+    /**
+     * 
+     * @return Une réponse HTTP 200 (Ok)
+     */
+    @GetMapping("/high-capacity")
+    public ResponseEntity<List<Park>> getParksWithHighCapacity() {
+        List<Park> parks = parkService.getCapacityGreaterThan10000();
+        return ResponseEntity.ok(parks);
+    }
+
+    @GetMapping("/low-capacity")
+    public ResponseEntity<List<Park>> getParksWithLowCapacity() {
+        List<Park> parks = parkService.getParksWithLowCapacity();
+        return ResponseEntity.ok(parks);
+    }
+
+    @GetMapping("/medium-capacity")
+    public ResponseEntity<List<ParkProjection>> getParksWithMediumCapacity() {
+        List<ParkProjection> parks = parkService.getParksWithMediumCapacity();
+        return ResponseEntity.ok(parks);
+    }
 }

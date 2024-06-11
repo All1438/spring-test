@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.stack.park.dto.ParkProjection;
 import com.stack.park.entities.Park;
 import com.stack.park.exceptions.NotFoundException;
 import com.stack.park.repositories.ParkRepository;
@@ -48,6 +49,9 @@ public class ParkService {
 
     // get by parkId
     public Optional<Park> findById(Integer parkId) {
+        if(!parkRepository.existsById(parkId)) {
+            throw new NotFoundException("Park not found with parkId: " +parkId);
+        }
        return parkRepository.findById(parkId);
     }
 
@@ -67,5 +71,18 @@ public class ParkService {
             throw new NotFoundException("Park not found with parkId: " + parkId);
         }
         parkRepository.deleteById(parkId);
+    }
+
+    // get park with capacity Greater than 10000
+    public List<Park> getCapacityGreaterThan10000() {
+        return parkRepository.findByCapacityGreaterThan(10000);
+    }
+
+    public List<Park> getParksWithLowCapacity() {
+        return parkRepository.findByCapacityLessThan();
+    }
+
+    public List <ParkProjection> getParksWithMediumCapacity() {
+        return parkRepository.findParksWithMediumCapacity();
     }
 }
