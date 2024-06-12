@@ -1,17 +1,24 @@
 package com.stack.park.entities;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -20,6 +27,7 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 @Table(name = "park")
 @EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Park {
 
     @Id
@@ -50,7 +58,13 @@ public class Park {
     @Column(name = "lastModifiedDate", nullable = false)
     private LocalDateTime lastModifiedDate;
 
+    @OneToMany(mappedBy = "park", cascade = CascadeType.ALL, orphanRemoval = true) // CascadeType.ALL = Applique toutes les opérations de cascade: PERSIST, MERGE, REMOVE, REFRESH, DETACH
+    // orphanRemoval=true = 
+    @JsonBackReference
+    private List<ParkCapacityChange> capacityChanges = new ArrayList<>();
 
+
+    
     
     
     public Integer getCapacity() {
@@ -76,7 +90,7 @@ public class Park {
     public void setParkId(Integer parkId) {
         this.parkId = parkId;
     }
-
+    
     public String getParkName() {
         return parkName;
     }
@@ -99,6 +113,17 @@ public class Park {
     public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
         this.lastModifiedDate = lastModifiedDate;
     }
+    
+    public List<ParkCapacityChange> getCapacityChanges() {
+        return capacityChanges;
+    }
+
+    public void setCapacityChanges(List<ParkCapacityChange> capacityChanges) {
+        this.capacityChanges = capacityChanges;
+    }
+
+    
+    
 
     
 }

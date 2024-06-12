@@ -1,11 +1,13 @@
 package com.stack.park.controllers;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -16,11 +18,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.stack.park.dto.ParkProjection;
 import com.stack.park.entities.Park;
+import com.stack.park.entities.ParkCapacityChange;
 import com.stack.park.exceptions.NotFoundException;
 import com.stack.park.services.ParkService;
 
@@ -142,4 +146,36 @@ public class ParkController {
         List<ParkProjection> parks = parkService.getParksWithMediumCapacity();
         return ResponseEntity.ok(parks);
     }
+
+    @PostMapping("/{id}/capacity-change")
+    public ResponseEntity<?> addCapacityChange(@PathVariable("id") Integer id, @Valid @RequestBody ParkCapacityChange capacityChange) {
+        try {
+            Park updatedPark = parkService.addCapacityChange(id, capacityChange);
+
+            updatedPark = parkService.updateCapacityWithCurrent(updatedPark);
+            return ResponseEntity.ok(updatedPark);
+        } catch (NotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}/capacity-at-date")
+    public ResponseEntity<?> getCapacityAtDate(@PathVariable("id") Integer id, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        //<?> signifie que le type de la response est indéfini à l'avance ou générique
+        // iso = DateTimeFormat.ISO.DATE = yyyy-MM-dd
+        try {
+            Integer capacity = parkService.getCapacityAtDate(id, date);
+
+            return ResponseEntity.ok(Map.of("date", date, "capacity", capacity));
+        } catch (NotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", ex.getMessage()));
+        }
+    }
 }
+
