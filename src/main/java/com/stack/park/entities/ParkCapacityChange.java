@@ -82,8 +82,8 @@ public class ParkCapacityChange {
         this.endDate = endDate;
     }
 
-    @PrePersist
-    @PreUpdate
+    @PrePersist // indique que la méthod doit être appelée avant que l'entity soit insérée dans la base de données
+    @PreUpdate // indique que la méthod sera appelé avant que l'entity est mis à jour
     private void validateDates() {
         if (endDate != null && startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("Start date must be before end date");

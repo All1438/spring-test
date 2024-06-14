@@ -126,6 +126,7 @@ public class ParkController {
     }
 
     /**
+     * récupère les parks supérieur à 10000
      * 
      * @return Une réponse HTTP 200 (Ok)
      */
@@ -135,18 +136,34 @@ public class ParkController {
         return ResponseEntity.ok(parks);
     }
 
+    /**
+     * récupère les parks inférieur à 10000
+     * 
+     * @return Une réponse HTTP 200 (ok)
+     */
     @GetMapping("/low-capacity")
     public ResponseEntity<List<Park>> getParksWithLowCapacity() {
         List<Park> parks = parkService.getParksWithLowCapacity();
         return ResponseEntity.ok(parks);
     }
 
+    /**
+     * récupère les parks entre 10000 et 40000
+     * @return
+     */
     @GetMapping("/medium-capacity")
     public ResponseEntity<List<ParkProjection>> getParksWithMediumCapacity() {
         List<ParkProjection> parks = parkService.getParksWithMediumCapacity();
         return ResponseEntity.ok(parks);
     }
 
+    /**
+     * ajoute une nouvelle capacité
+     * 
+     * @param id l'id du park a ajouté de nouvelle capacité
+     * @param capacityChange les nouvelles information du capacité
+     * @return une réponse HTTP 200(ok) avec la capacité ajouté
+     */
     @PostMapping("/{id}/capacity-change")
     public ResponseEntity<?> addCapacityChange(@PathVariable("id") Integer id, @Valid @RequestBody ParkCapacityChange capacityChange) {
         try {
@@ -163,6 +180,12 @@ public class ParkController {
         }
     }
 
+    /**
+     * 
+     * @param id l'identifiant du park
+     * @param date la date de la capacity à récuperer
+     * @return une réponse HTTP 200(ok) avec la date et la capacité cible
+     */
     @GetMapping("/{id}/capacity-at-date")
     public ResponseEntity<?> getCapacityAtDate(@PathVariable("id") Integer id, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         //<?> signifie que le type de la response est indéfini à l'avance ou générique
@@ -171,6 +194,29 @@ public class ParkController {
             Integer capacity = parkService.getCapacityAtDate(id, date);
 
             return ResponseEntity.ok(Map.of("date", date, "capacity", capacity));
+        } catch (NotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", ex.getMessage()));
+        }
+    }
+
+    /**
+     * 
+     * @param id l'identifiant du park à récuperer
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @GetMapping("/{id}/capacities-between-dates")
+    public ResponseEntity<?> getCapacitiesBetweenDates(@PathVariable("id") Integer id, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "startDate cannot be after endDate"));
+        }
+        try {
+            List<Map<String, Object>> capacities = parkService.getCapacitiesGroupedByInterval(id, startDate, endDate);
+
+            return ResponseEntity.ok(capacities);
         } catch (NotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
         } catch (Exception ex) {

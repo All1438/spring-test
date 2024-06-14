@@ -1,5 +1,6 @@
 package com.stack.park.exceptions;
 
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import jakarta.validation.ConstraintViolationException;
 
@@ -17,6 +19,7 @@ import org.springframework.validation.FieldError;
 @ControllerAdvice // indique qu'elle va gérer les exceptions de manière global
 public class GlobalExceptionHandler {
 
+    // lorsque qu'un méthod annoté avec @Valid échoue à la validation
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST) // définit le status HTTP à renvoyé
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -38,7 +41,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-    // Cette méthode gère les exceptions de type ConstraintViolationException
+    // lorsque les contraintes de validation sont violées
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Map<String, String>> handleConstraintViolationException(ConstraintViolationException ex) {
@@ -55,8 +58,9 @@ public class GlobalExceptionHandler {
         });
         // Retourne une réponse HTTP avec le statut 400 (Bad Request) et la map des violations
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-
     }
+
+    // lorsqu'une méthod a été passée un argument illégal ou inapproprié
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
@@ -73,6 +77,23 @@ public class GlobalExceptionHandler {
         errorResponse.put("message", ex.getMessage());
         
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    // Lorsqu'un argument de méthod de contrôleur n'est pas du bon type
+    // lorsque le type de l'argument ne correspond pas, comme une date mal formé
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Map<String, String>> handleMethodArgumentTypeMistach(MethodArgumentTypeMismatchException ex) {
+        String errorMessage = "Invalid date format. Please use the format YYYY-MM-DD";
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", errorMessage));
+    }
+
+    // lorsque l'analyse (parsing) d'une chaîne en une date/heure échoue.
+    @ExceptionHandler(DateTimeParseException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Map<String, String>> handleDateTimeParseException(DateTimeParseException ex) {
+        String errorMessage = "Invalid date format. Please use the format YYYY-MM-DD.";
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", errorMessage));
     }
 }
 
